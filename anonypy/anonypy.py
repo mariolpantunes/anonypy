@@ -21,7 +21,6 @@ class Preserver:
         )
 
     def anonymize_k_anonymity(self, k):
-        logger.debug(f'def anonymize_k_anonymity')
         return self.__anonymize(k)
 
     def anonymize_l_diversity(self, k, l):
@@ -69,10 +68,6 @@ def agg_numerical_column(series):
 
 
 def anonymize(df, partitions, feature_columns, sensitive_column, max_partitions=None):
-    logger.debug(f'anonymize')
-    logger.debug(f'{feature_columns}/{sensitive_column}')
-    logger.debug(f'{partitions}')
-    
     # 1. deep copy dataframe
     rv = df.copy()
 
@@ -85,59 +80,10 @@ def anonymize(df, partitions, feature_columns, sensitive_column, max_partitions=
         rv[column]=rv[column].astype('str')
     
     # 2. for each partition
-    #for i, partition in enumerate(partitions):
     for partition in partitions:
-        logger.debug(f'PARTITION {partition}')
         # 3. for each feature column:
-        grouped_columns = {
-            column: aggregations[column](df.loc[partition, column])
-            for column in feature_columns
-        }
-
         for column in feature_columns:
-
-            logger.debug(f'{partition}/{len(partition)}/{grouped_columns[column]}')
-            logger.debug(f'VALUE {[grouped_columns[column]]*len(partition)}')
-            rv.loc[partition, column] = [grouped_columns[column]]*len(partition)
-
-        #sensitive_counts = (
-        #    df.loc[partition]
-        #    .groupby(sensitive_column, observed=False)[sensitive_column]
-        #    .count()
-        #    .to_dict()
-        #)
-        logger.debug(f'{grouped_columns}')
-
-    rows = []
-    '''for i, partition in enumerate(partitions):
-        if max_partitions is not None and i > max_partitions:
-            break
-        grouped_columns = {
-            column: aggregations[column](df.loc[partition, column])
-            for column in feature_columns
-        }
-        
-        sensitive_counts = (
-            df.loc[partition]
-            .groupby(sensitive_column, observed=False)[sensitive_column]
-            .count()
-            .to_dict()
-        )
-
-        logger.debug(f'{grouped_columns}')
-        logger.debug(f'{sensitive_counts}')
-
-        for sensitive_value, count in sensitive_counts.items():
-            if count == 0:
-                continue
-            values = grouped_columns.copy()
-            values.update(
-                {
-                    sensitive_column: sensitive_value,
-                    "count": count,
-                }
-            )
-            rows.append(values)'''
+            rv.loc[partition, column] = aggregations[column](df.loc[partition, column])*len(partition)
     return rv
 
 

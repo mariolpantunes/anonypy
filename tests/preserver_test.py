@@ -81,5 +81,3 @@ def test_t_closeness():
 
     dfn = pd.DataFrame(rows)
     print(dfn)
-
-test_k_anonymity()
